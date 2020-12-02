@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -15,15 +16,24 @@ namespace TAC_Grabber
 
         AsyncPolicyWrap<HttpResponseMessage> policyWrap;
 
+
+        HttpStatusCode[] excludeStatusCode= new[]
+            {
+                HttpStatusCode.NotFound,
+                HttpStatusCode.BadRequest
+            };
+
         public BaseHTTPClient(HttpMessageInvoker httpClient)
         {
             if (httpClient == null)
                 throw new ArgumentNullException(nameof(httpClient));
 
             client = httpClient;
+           
 
             var retryPolicy = Policy
-                .HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+                .Handle<HttpRequestException>()
+                .OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode && !excludeStatusCode.Contains(r.StatusCode))
                 .WaitAndRetryForeverAsync(retryAttemp => TimeSpan.FromSeconds(Math.Pow(2, retryAttemp)));
 
             var reauthPolicy = Policy

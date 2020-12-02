@@ -7,7 +7,7 @@ namespace TAC_Grabber
     public class SimpleSettings
     {
         public int LastValue { get; set; }
-        public int[] ProxiesPort { get; set; } = Enumerable.Range(8181, 4).ToArray();
+        public int[] ProxiesPort { get; set; } = Enumerable.Range(8181, 1).ToArray();
 
 
         private const string settingsFileName = "settings.json";
