@@ -11,7 +11,7 @@ namespace TAC_Grabber
 {
     public abstract class BaseHTTPClient
     {
-        private readonly HttpMessageInvoker client;
+        protected readonly HttpMessageInvoker client;
 
         AsyncPolicyWrap<HttpResponseMessage> policyWrap;
 

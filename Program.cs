@@ -7,8 +7,7 @@ namespace TAC_Grabber
     {
         static void Main(string[] args)
         {
-            var proxiesPort = Enumerable.Range(8181, 4).ToArray();
-            var worker = new Worker(proxiesPort);
+            var worker = new Worker();
             worker.Start();
 
             Console.WriteLine("Press enter to exit");

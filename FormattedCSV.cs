@@ -1,6 +1,6 @@
 ﻿namespace TAC_Grabber
 {
-    public class FormattedCVS
+    public class FormattedCSV
     {
 
         public string Host { get; set; }

@@ -17,12 +17,18 @@ namespace TAC_Grabber
                 AllowAutoRedirect = false
             };
 
-            var httpClient = new HttpClient(handler);
+            var httpClient = new HttpClient(new LoggingHandler(handler));
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (compatible;)");
 
-            return new[]
+            return new BaseHTTPClient[]
             {
-                new XinitClient(httpClient)
+                new XinitClient(httpClient),
+                new TMobileClient(httpClient),
+                new ESTMobileClient(httpClient),
+                new CricketWirelessClient(httpClient),
+                new UScellularClient(httpClient),
+                new UltraMobileClient(httpClient),
+
             };
         }
     }

@@ -39,12 +39,12 @@ namespace TAC_Grabber.Clients
             var sb = new StringBuilder();
             foreach (var item in items.Where(x => x.TAC.Length == 8))
             {
-                var cvs = new FormattedCVS();
-                cvs.Host = response.RequestMessage.RequestUri.Host;
-                cvs.TAC = item.TAC;
-                cvs.Result = item.Info;
+                var csv = new FormattedCSV();
+                csv.Host = response.RequestMessage.RequestUri.Host;
+                csv.TAC = item.TAC;
+                csv.Result = item.Info;
 
-                sb.AppendLine(cvs.ToString());
+                sb.AppendLine(csv.ToString());
 
             }
             return sb.ToString();

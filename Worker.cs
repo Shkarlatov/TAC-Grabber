@@ -13,17 +13,18 @@ namespace TAC_Grabber
     class Worker
     {
         private SimpleSettings Settings { get; set; }
-        private FileStream fs;
+
+        StreamWriter sw;
 
         private Dictionary<int, BaseHTTPClient[]> clients = new Dictionary<int, BaseHTTPClient[]>();
         private IMEIGenerator IMEIGenerator = new IMEIGenerator();
 
 
-        public Worker(int[] proxiesPorts)
+        public Worker()
         {
             Settings = SimpleSettings.Load();
 
-            foreach(var port in proxiesPorts)
+            foreach(var port in Settings.ProxiesPort)
             {
                 clients[port] = ClientsFactory.GetClients(new WebProxy("127.0.0.1", port));
             }
@@ -37,7 +38,8 @@ namespace TAC_Grabber
             cancellationTokenSource = null;
             Settings.Save();
 
-            fs?.Close();
+            sw?.Close();
+            
         }
 
         public void Start()
@@ -47,7 +49,8 @@ namespace TAC_Grabber
 
             cancellationTokenSource = new CancellationTokenSource();
 
-            fs = File.OpenWrite("tacs.csv");
+            sw = new StreamWriter("tacs.csv", append: true);
+
 
             Task.Run(DoWork,cancellationTokenSource.Token);
         }
@@ -56,7 +59,18 @@ namespace TAC_Grabber
         {
             if(!string.IsNullOrEmpty(str))
             {
-                Console.WriteLine(str);
+                var lines = str
+                    .Split("\r\n")
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Select(x => x.Trim());
+                foreach(var line in lines)
+                {
+                   
+                    sw.WriteLine(line);
+                    Console.WriteLine($"{DateTime.Now}: {line}");
+                }
+                sw.Flush();
+                
             }
         }
         private async Task DoWork()
@@ -70,7 +84,7 @@ namespace TAC_Grabber
                     var tasks = group.Value.Select(x => x.GetQueryAsync(tac.Current));
                     var whenAll = Task.WhenAll(tasks);
                     currentTasks.Add(whenAll);
-                    Console.WriteLine(tac.Current);
+                    Console.WriteLine("Current TAC: "+ tac.Current.Substring(0,8));
                     tac.MoveNext();
                     Settings.LastValue++;
                 }
