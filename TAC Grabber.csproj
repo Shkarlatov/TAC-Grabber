@@ -6,4 +6,8 @@
     <RootNamespace>TAC_Grabber</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Polly" Version="7.2.1" />
+  </ItemGroup>
+
 </Project>
