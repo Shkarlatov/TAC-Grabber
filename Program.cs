@@ -6,7 +6,7 @@ namespace TAC_Grabber
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+           
         }
     }
 }
