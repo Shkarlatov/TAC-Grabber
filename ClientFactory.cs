@@ -9,7 +9,7 @@ namespace TAC_Grabber
     {
         public static BaseHTTPClient[] GetClients(IWebProxy proxy)
         {
-            var handler = new HttpClientHandler
+            var handler = new SocketsHttpHandler
             {
                 Proxy = proxy,
                 UseProxy = proxy != null,
