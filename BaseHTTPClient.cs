@@ -33,6 +33,7 @@ namespace TAC_Grabber
 
             var retryPolicy = Policy
                 .Handle<HttpRequestException>()
+                .Or<TaskCanceledException>()
                 .OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode && !excludeStatusCode.Contains(r.StatusCode))
                 .WaitAndRetryForeverAsync(retryAttemp => TimeSpan.FromSeconds(Math.Pow(2, retryAttemp)));
 
