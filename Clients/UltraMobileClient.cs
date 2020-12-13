@@ -45,7 +45,7 @@ namespace TAC_Grabber.Clients
         protected override async Task<string> ProcessResponseAsync(HttpResponseMessage response)
         {
             var item=await Deserialize<UltraMobileRootItem>(response);
-            if(item!=null && item.device!=null)
+            if(item!=null && item.device!=null && item.device.name!=null && !string.IsNullOrEmpty(item.device.name))
             {
                var json= await response.RequestMessage.Content.ReadAsStringAsync();
                 var tac=JsonSerializer.Deserialize<UltraMobileJson>(json);
