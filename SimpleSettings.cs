@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text.Json;
 
@@ -8,8 +6,8 @@ namespace TAC_Grabber
 {
     public class SimpleSettings
     {
-        public Dictionary<string, int> LastValues { get; set; } = new Dictionary<string, int>();
-        public int[] ProxiesPort { get; set; } = Enumerable.Range(8181, 20).ToArray();
+        public int LastValue { get; set; }
+        public int[] ProxiesPort { get; set; } = Enumerable.Range(8181, 1).ToArray();
 
 
         private const string settingsFileName = "settings.json";

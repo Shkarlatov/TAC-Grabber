@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,9 +14,11 @@ namespace TAC_Grabber
     {
         private SimpleSettings Settings { get; set; }
 
-        private StreamWriter sw;
+        StreamWriter sw;
+
+        private Dictionary<int, BaseHTTPClient[]> clients = new Dictionary<int, BaseHTTPClient[]>();
         private IMEIGenerator IMEIGenerator = new IMEIGenerator();
-        private GroupWorker[] groupWorkers;
+
 
         public Worker()
         {
@@ -25,22 +26,9 @@ namespace TAC_Grabber
 
             foreach(var port in Settings.ProxiesPort)
             {
-                 ClientsFactory.CreateClients(port);
+                clients[port] = ClientsFactory.GetClients(new WebProxy("127.0.0.1", port));
             }
 
-            groupWorkers = ClientsFactory.GetGroupClientsByType()
-               .Select(x => new GroupWorker(x.Value, IMEIGenerator))
-               .ToArray();
-
-            foreach(var group in groupWorkers)
-            {
-                if(Settings.LastValues.TryGetValue(group.GroupName, out int last))
-                {
-                    group.SkipIMEICount = last;
-                }
-
-            }
-            
         }
 
         CancellationTokenSource cancellationTokenSource;
@@ -53,7 +41,6 @@ namespace TAC_Grabber
             sw?.Close();
             
         }
-
 
         public void Start()
         {
@@ -86,47 +73,29 @@ namespace TAC_Grabber
                 
             }
         }
-
         private async Task DoWork()
         {
-            var currentTasks= groupWorkers.Select(group => new TaskId
+            var currentTasks = new List<Task<string[]>>();
+            var tac = IMEIGenerator.GetValidIMEI(Settings.LastValue).GetEnumerator();
+            while(tac.MoveNext())
             {
-                Id = group.GroupName,
-                Task = group.GetTask()
-            }).ToList();
-
-            var statusString = new StringBuilder();
-            while (true)
-            {
-                await Task.WhenAny(currentTasks.Select(x => x.Task));
-
-                var completedTasks = currentTasks.Where(x => x.Task.IsCompleted).ToArray();
-                foreach(var competed in completedTasks)
+                foreach(var group in clients)
                 {
-                    var result = await competed.Task;
-                    foreach(var str in result)
-                    {
-                        ProcessingResult(str);
-                    }
-                    currentTasks.Remove(competed);
-                    var newTask = groupWorkers.Where(x => x.GroupName == competed.Id).Select(group => new TaskId
-                    {
-                        Id = group.GroupName,
-                        Task = group.GetTask()
-                    }).First();
-                    currentTasks.Add(newTask);
+                    var tasks = group.Value.Select(x => x.GetQueryAsync(tac.Current));
+                    var whenAll = Task.WhenAll(tasks);
+                    currentTasks.Add(whenAll);
+                    Console.WriteLine("Current TAC: "+ tac.Current.Substring(0,8));
+                    tac.MoveNext();
+                    Settings.LastValue++;
                 }
 
-                
-                foreach (var group in groupWorkers)
+                var completed = await Task.WhenAny(currentTasks);
+                currentTasks.Remove(completed);
+                var result = await completed;
+                foreach(var res in result)
                 {
-                    statusString.Append($"{group.GroupName.Replace("Client", "")}: {group.SkipIMEICount} ");
-
-                    Settings.LastValues[group.GroupName] = group.SkipIMEICount;
+                    ProcessingResult(res);
                 }
-                statusString.Append('\r');
-                Console.Write(statusString);
-                statusString.Clear();
             }
         }
     }
