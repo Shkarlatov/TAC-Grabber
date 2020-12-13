@@ -53,7 +53,10 @@ namespace TAC_Grabber.Clients
                 var csv = new FormattedCSV();
                 csv.Host = response.RequestMessage.RequestUri.Host;
                 csv.TAC = response.RequestMessage.RequestUri.Segments.Last().Substring(0,8);
-                csv.Result = $"{data.Make} {data.Model}";
+                if (data.Make == data.Model)
+                    csv.Result = data.Make;
+                else
+                    csv.Result = $"{data.Make} {data.Model}";
                 return csv.ToString();
             }
             return string.Empty;
