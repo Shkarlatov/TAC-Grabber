@@ -16,7 +16,8 @@ namespace TAC_Grabber
 
         private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
         {
-            WriteIndented = true
+            WriteIndented = true,
+            AllowTrailingCommas=true
         };
         public void Save()
         {
