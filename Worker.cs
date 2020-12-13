@@ -66,7 +66,6 @@ namespace TAC_Grabber
 
             sw = new StreamWriter("tacs.csv", append: true);
 
-
             Task.Run(DoWork, cancellationTokenSource.Token);
         }
 
@@ -82,6 +81,9 @@ namespace TAC_Grabber
                 {
 
                     sw.WriteLine(line);
+                    // HACK:
+                    // clear last line
+                    Console.Write("\r" + new string(' ', Console.WindowWidth-1)+"\r");
                     Console.WriteLine($"{DateTime.Now}: {line}");
                 }
                 sw.Flush();
@@ -90,37 +92,31 @@ namespace TAC_Grabber
         }
         private async Task DoWork()
         {
-            var dic = new Dictionary<string, Task<string[]>>();
+            var pool = new TaskPool<GroupWorker,string,Task<string[]>,string[]>(
+                groupWorkers,
+                x=>x.GroupName,
+                x=>x.GetTask()
+                );
 
-            foreach (var group in groupWorkers)
+            var statusString = new StringBuilder(255);
+            while(true)
             {
-                dic[group.GroupName] = group.GetTask();
-            }
-
-            var statusString = new StringBuilder();
-            while (true)
-            {
-                await Task.WhenAny(dic.Values);
-                foreach(var task in dic.Where(x=>x.Value.IsCompleted).ToArray())
-                {
-                    dic[task.Key] = groupWorkers
-                        .First(x => x.GroupName == task.Key)
-                        .GetTask();
-
-                    var result = await task.Value;
-                    foreach(var res in result)
+                var result=await pool.NextAsync();
+                foreach(var res in result)
+                    foreach(var str in res)
                     {
-                        ProcessingResult(res);
+                        ProcessingResult(str);
                     }
-                }
+
                 statusString.Clear();
-                foreach (var group in groupWorkers)
+                foreach(var group in groupWorkers)
                 {
-                    statusString.Append($"{group.GroupName.Replace("Client","")}: {group.SkipIMEICount} ");
+                    statusString.Append($"{group.GroupName.Replace("Client", "")}:{group.SkipIMEICount} ");
                 }
                 statusString.Append('\r');
                 Console.Write(statusString);
             }
+            
         }
     }
 }
