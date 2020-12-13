@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace TAC_Grabber
 {
@@ -14,5 +13,6 @@ namespace TAC_Grabber
             Console.ReadLine();
             worker.Stop();
         }
+
     }
 }
