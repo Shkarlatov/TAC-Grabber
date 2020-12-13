@@ -82,6 +82,9 @@ namespace TAC_Grabber
                 {
 
                     sw.WriteLine(line);
+                    //HACK:
+                    // clear last line before write
+                    Console.Write("\r" + new string(' ', Console.WindowWidth - 1) + "\r");
                     Console.WriteLine($"{DateTime.Now}: {line}");
                 }
                 sw.Flush();
