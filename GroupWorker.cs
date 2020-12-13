@@ -20,20 +20,21 @@ namespace TAC_Grabber
             this.clients = clients;
             this.IMEIGenerator = generator;
             GroupName = clients.First().GetType().Name;
+
+            _cache = clients.ToDictionary(
+                  x => x.GetHashCode()
+                  , x => x.GetQueryAsync(
+                       IMEIGenerator.GetValidIMEI(SkipIMEICount++)
+                       .First()
+                       ));
         }
 
         public async Task<string[]> GetTask()
         {
             if(_cache.Count==0)
             {
-                _cache = clients.ToDictionary(
-                    x=>x.GetHashCode()
-                    ,x=>x.GetQueryAsync(
-                        IMEIGenerator.GetValidIMEI(SkipIMEICount++)
-                        .First()
-                        ));
+                throw new Exception();
             }
-
             while(true)
             {
                 await Task.Delay(1);
@@ -48,8 +49,16 @@ namespace TAC_Grabber
                     var result = await completedTask.Value;
                     lst.Add(result);
 
-                    _cache[completedTask.Key] = clients.First(x => x.GetHashCode() == completedTask.Key).GetQueryAsync(IMEIGenerator.GetValidIMEI(SkipIMEICount++)
-                        .First());
+                    try
+                    {
+                        _cache[completedTask.Key] = clients.First(x => x.GetHashCode() == completedTask.Key).GetQueryAsync(IMEIGenerator.GetValidIMEI(SkipIMEICount++)
+                       .First());
+                    }
+                    catch
+                    {
+                        _cache.Remove(completedTask.Key);
+                    }
+                   
                 }
                 if (lst.Count > 0)
                     return lst.ToArray();

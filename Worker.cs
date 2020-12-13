@@ -101,11 +101,20 @@ namespace TAC_Grabber
             while (true)
             {
                 await Task.WhenAny(dic.Values);
+
+                var errors = dic.Where(x => x.Value.IsFaulted).ToArray();
+                foreach(var error in errors)
+                {
+                    dic.Remove(error.Key);
+                }
+                
                 foreach(var task in dic.Where(x=>x.Value.IsCompleted).ToArray())
                 {
-                    dic[task.Key] = groupWorkers
-                        .First(x => x.GroupName == task.Key)
-                        .GetTask();
+
+                        dic[task.Key] = groupWorkers
+                       .First(x => x.GroupName == task.Key)
+                       .GetTask();
+
 
                     var result = await task.Value;
                     foreach(var res in result)
