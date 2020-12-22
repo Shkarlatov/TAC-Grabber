@@ -18,7 +18,6 @@ namespace TAC_Grabber.IMEI
                 new ReportingBodyIdentifier(86,"TAF (China)"),
                 new ReportingBodyIdentifierLimit(98,100,7800,"Reserved"),
                 new ReportingBodyIdentifier(99,"GHA"),
-                new ReportingBodyIdentifier(86,"TAF (China)"),
 
                 new ReportingBodyIdentifier(10,"DECT PP",Band.DECT),
                 new ReportingBodyIdentifier(30,"Iridium",Band.GSM_Satellite),
